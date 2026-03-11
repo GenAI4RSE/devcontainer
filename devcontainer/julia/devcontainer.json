@@ -1,0 +1,56 @@
+{
+  "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.base.schema.json",
+  "name": "Julia",
+  "image": "ubuntu:24.04",
+  "init": true,
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "username": "neo",
+      "userUid": "automatic",
+      "userGid": "automatic",
+      "configureZshAsDefaultShell": true
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers-extra/features/apt-get-packages:1": {
+      "packages": "jq,vim,bat,autojump"
+    },
+    "ghcr.io/meaningful-ooo/devcontainer-features/julia:1": {
+      "version": "latest"
+    }
+  },
+  "onCreateCommand": {
+    "system-setup": "bash /workspace/.devcontainer/common-setup.sh"
+  },
+  "postCreateCommand": {
+    "zsh-custom": "bash /workspace/.devcontainer/zsh-custom.sh",
+    "claude-code": "curl -fsSL https://claude.ai/install.sh | bash"
+  },
+  "waitFor": "postCreateCommand",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "julialang.language-julia"
+      ]
+    }
+  },
+  "containerUser": "neo",
+  "remoteUser": "neo",
+  "mounts": [
+    "source=claude-code-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
+    "source=claude-code-config-${devcontainerId},target=/home/neo/.claude,type=volume"
+  ],
+  "containerEnv": {
+    "HISTFILE": "/commandhistory/.zsh_history",
+    "CLAUDE_CONFIG_DIR": "/home/neo/.claude",
+    "GIT_DELTA_VERSION": "0.18.2",
+    "POWERLEVEL9K_DISABLE_GITSTATUS": "true",
+    "LANG": "en_US.UTF-8",
+    "LC_ALL": "en_US.UTF-8",
+    "DEVCONTAINER": "true",
+    "EDITOR": "vim",
+    "VISUAL": "vim",
+    "TZ": "${localEnv:TZ:Europe/Amsterdam}"
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
+  "workspaceFolder": "/workspace"
+}
