@@ -103,8 +103,8 @@ class TestResolveCustomKeys:
         merged = self._base_merged()
         lang_frags = [
             {
-                "_id": "c-cpp-fortran",
-                "_name": "C",
+                "_id": "test-lang",
+                "_name": "Test",
                 "_extra_apt_packages": ["gcc", "gdb"],
                 "_default_version": "latest",
                 "_feature_key": "x",
@@ -341,9 +341,9 @@ class TestGenerate:
         assert not any(k.startswith("_") for k in data)
 
     def test_no_agent(self, tmp_output: Path) -> None:
-        generate([("rust", None)], [], tmp_output)
+        generate([("node", None)], [], tmp_output)
         data = json.loads((tmp_output / "devcontainer.json").read_text())
-        assert data["name"] == "Rust"
+        assert data["name"] == "TypeScript / Node.js"
         assert "postCreateCommand" in data
         assert len(data["postCreateCommand"]) == 1  # only zsh-custom
         setup = (tmp_output / "common-setup.sh").read_text()
@@ -379,9 +379,9 @@ class TestGenerate:
 
 
 class TestGenerateBatch:
-    def test_generates_36_directories(self, tmp_output: Path) -> None:
+    def test_generates_12_directories(self, tmp_output: Path) -> None:
         paths = generate_batch(tmp_output)
-        assert len(paths) == 36
+        assert len(paths) == 12
         # Each should have the 3 output files
         for p in paths:
             assert (p / "devcontainer.json").exists()
@@ -392,4 +392,4 @@ class TestGenerateBatch:
         generate_batch(tmp_output)
         assert (tmp_output / "python").exists()
         assert (tmp_output / "python-claude-code").exists()
-        assert (tmp_output / "c-cpp-fortran-codex").exists()
+        assert (tmp_output / "node-codex").exists()

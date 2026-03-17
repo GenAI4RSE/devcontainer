@@ -26,7 +26,7 @@
 uv sync                                          # install dependencies
 uv run devcc list                                # list available languages and agents
 uv run devcc create -l python -a claude-code     # generate .devcontainer/
-uv run devcc batch                               # generate all 36 templates
+uv run devcc batch                               # generate all 12 templates
 uv run devcc validate                            # validate generated templates
 uv run ruff check src/ tests/                    # lint
 uv run ruff format src/ tests/                   # format

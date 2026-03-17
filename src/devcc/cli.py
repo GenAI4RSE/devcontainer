@@ -103,11 +103,11 @@ def batch(output: str) -> None:
     """Create devcontainers for language-agent pair combinations.
 
     \b
-    Produces 6 languages x (5 agents + no-agent) = 36 templates.
+    Produces 2 languages x (5 agents + no-agent) = 12 templates.
     Each template gets its own directory with:
       devcontainer.json, common-setup.sh, zsh-custom.sh
     Directory naming: <lang> or <lang>-<agent>
-      e.g., python/, python-claude-code/, rust-codex/
+      e.g., python/, python-claude-code/, node-codex/
     All templates are auto-validated after generation.
     """
     output_dir = Path(output)

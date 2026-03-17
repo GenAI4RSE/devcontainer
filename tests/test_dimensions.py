@@ -52,9 +52,9 @@ class TestDataLoading:
     def test_list_available_languages(self) -> None:
         lang_dim = DIMENSIONS[0]
         langs = list_available(lang_dim)
-        assert len(langs) == 6
+        assert len(langs) == 2
         ids = {f["_id"] for f in langs}
-        assert ids == {"python", "node", "rust", "r", "julia", "c-cpp-fortran"}
+        assert ids == {"python", "node"}
 
     def test_list_available_agents(self) -> None:
         agent_dim = DIMENSIONS[1]

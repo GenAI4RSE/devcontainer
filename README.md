@@ -16,12 +16,8 @@ devcc list
 
 ```
 Languages:
-  python               Python                    (default: 3.12)
-  node                 TypeScript / Node.js      (default: 22)
-  rust                 Rust                      (default: latest)
-  r                    R                         (default: release)
-  julia                Julia                     (default: latest)
-  c-cpp-fortran        C / C++ / Fortran         (default: latest)
+  python               Python                    (default: latest)
+  node                 TypeScript / Node.js      (default: latest)
 
 Agents:
   claude-code          Claude Code CLI
@@ -62,7 +58,7 @@ devcc create -l python,node -a claude-code
 devcc create -l python -a claude-code,codex
 
 # Language only, no agent
-devcc create -l rust
+devcc create -l node
 
 # Custom output directory
 devcc create -l python -a claude-code -o my-devcontainer

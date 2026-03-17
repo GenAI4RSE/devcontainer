@@ -29,10 +29,10 @@ class TestCreate:
 
     def test_no_agent(self, runner: CliRunner, tmp_path: Path) -> None:
         out = tmp_path / ".devcontainer"
-        result = runner.invoke(main, ["create", "-l", "rust", "-o", str(out)])
+        result = runner.invoke(main, ["create", "-l", "node", "-o", str(out)])
         assert result.exit_code == 0, result.output
         data = json.loads((out / "devcontainer.json").read_text())
-        assert data["name"] == "Rust"
+        assert data["name"] == "TypeScript / Node.js"
 
     def test_version_override(self, runner: CliRunner, tmp_path: Path) -> None:
         out = tmp_path / ".devcontainer"
@@ -63,11 +63,11 @@ class TestCreate:
 
 
 class TestBatch:
-    def test_generates_36_templates(self, runner: CliRunner, tmp_path: Path) -> None:
+    def test_generates_12_templates(self, runner: CliRunner, tmp_path: Path) -> None:
         result = runner.invoke(main, ["batch", "-o", str(tmp_path)])
         assert result.exit_code == 0, result.output
         dirs = [d for d in tmp_path.iterdir() if d.is_dir()]
-        assert len(dirs) == 36
+        assert len(dirs) == 12
 
 
 class TestList:
@@ -77,9 +77,6 @@ class TestList:
         assert "Languages:" in result.output
         assert "python" in result.output
         assert "node" in result.output
-        assert "rust" in result.output
-        assert "julia" in result.output
-        assert "c-cpp-fortran" in result.output
         assert "Agents:" in result.output
         assert "claude-code" in result.output
         assert "codex" in result.output

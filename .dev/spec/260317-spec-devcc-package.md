@@ -115,12 +115,8 @@ Example with Node.js dependency (`data/agents/codex.json`):
 
 | ID | Name | Feature | Default Version |
 |----|------|---------|----------------|
-| `python` | Python | `ghcr.io/devcontainers/features/python:1` | 3.12 |
-| `node` | TypeScript / Node.js | `ghcr.io/devcontainers/features/node:1` | 22 |
-| `rust` | Rust | `ghcr.io/devcontainers/features/rust:1` | latest |
-| `r` | R | `ghcr.io/rocker-devs/devcontainer-features/r-rig:1` | release |
-| `julia` | Julia | `ghcr.io/meaningful-ooo/devcontainer-features/julia:1` | latest |
-| `c-cpp-fortran` | C / C++ / Fortran | cmake:1 + fpm:1 | latest |
+| `python` | Python | `ghcr.io/devcontainers/features/python:1` | latest |
+| `node` | TypeScript / Node.js | `ghcr.io/devcontainers/features/node:1` | latest |
 
 ### Supported Agents
 
@@ -193,7 +189,7 @@ Single pass over the merged dict:
 - `deep_merge(base: dict, *overlays: dict) -> dict` — generic recursive merge
 - `resolve_custom_keys(merged: dict) -> dict` — applies all resolution rules, strips `_` keys
 - `generate(languages: list[tuple[str, str | None]], agents: list[str], output_dir: Path) -> Path` — top-level entry point. Language tuples are `(id, version_or_none)`. Returns the output directory path. Raises `ValueError` for unknown language/agent IDs.
-- `generate_batch(output_dir: Path) -> list[Path]` — all single-lang x single-agent combos + no-agent combos (6 × 6 = 36 total). Batch intentionally generates only single-language combinations; multi-language is a `create`-only feature. Batch uses default versions for all languages.
+- `generate_batch(output_dir: Path) -> list[Path]` — all single-lang x single-agent combos + no-agent combos (2 × 6 = 12 total). Batch intentionally generates only single-language combinations; multi-language is a `create`-only feature. Batch uses default versions for all languages.
 
 ### Output Structure
 
@@ -250,9 +246,9 @@ Validate `devcontainer.json` against the official JSON schema from `https://cont
 ```bash
 devcc create -l python -a claude-code             # single combo → .devcontainer/
 devcc create -l python:3.11,node:20 -a codex      # multi-lang, explicit versions
-devcc create -l rust                               # no agent
+devcc create -l node                               # no agent
 devcc create -l python -a claude-code -o /tmp/out  # custom output dir
-devcc batch                                        # all 36 templates → templates/
+devcc batch                                        # all 12 templates → templates/
 devcc batch -o /tmp/templates                      # custom batch output
 devcc list-langs                                   # available languages + defaults
 devcc list-agents                                  # available agents
@@ -357,7 +353,7 @@ Integration tests with `CliRunner`:
 - `create` produces valid output with expected files
 - `create` with no agent works
 - `create` with version override works
-- `batch` generates 36 directories
+- `batch` generates 12 directories
 - `list-langs` / `list-agents` show expected output
 - `validate` returns 0 on valid, non-zero on invalid
 - Invalid language/agent ID gives clear error
@@ -373,6 +369,6 @@ Generated `devcontainer.json` uses 2-space indentation with a trailing newline, 
 3. `uv run devcc create -l python -a claude-code` produces valid `.devcontainer/`
 4. `uv run devcc create -l python` produces valid output without agent
 5. `uv run devcc create -l python:3.11 -a claude-code` uses Python 3.11
-6. `uv run devcc batch` produces 36 templates
+6. `uv run devcc batch` produces 12 templates
 7. `uv run devcc validate` passes on all generated templates
 8. `uv run pytest` — all tests pass

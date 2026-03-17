@@ -77,7 +77,7 @@ class TestValidateDirectory:
 
 class TestValidateBatch:
     def test_valid_batch(self, tmp_path: Path) -> None:
-        for name in ["python", "rust"]:
+        for name in ["python", "node"]:
             _write_valid_template(tmp_path / name)
         result = validate_batch(tmp_path)
         assert all(errors == [] for errors in result.values())
