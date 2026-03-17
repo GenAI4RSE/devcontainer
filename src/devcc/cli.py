@@ -100,7 +100,7 @@ def create(ctx: click.Context, langs: str | None, agents: str, output: str) -> N
     help="Output directory.",
 )
 def batch(output: str) -> None:
-    """Generate all 36 template combinations.
+    """Create devcontainers for language-agent pair combinations.
 
     \b
     Produces 6 languages x (5 agents + no-agent) = 36 templates.
