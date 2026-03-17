@@ -335,7 +335,7 @@ class TestGenerate:
         assert (tmp_output / "common-setup.sh").exists()
         assert (tmp_output / "zsh-custom.sh").exists()
         data = json.loads((tmp_output / "devcontainer.json").read_text())
-        assert data["name"] == "Python + Claude Code"
+        assert data["name"] == "Python + Claude Code CLI"
         assert "ghcr.io/devcontainers/features/python:1" in data["features"]
         assert "claude-code" in data["postCreateCommand"]
         assert not any(k.startswith("_") for k in data)

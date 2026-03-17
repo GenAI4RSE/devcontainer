@@ -25,7 +25,7 @@ class TestCreate:
         assert result.exit_code == 0, result.output
         assert (out / "devcontainer.json").exists()
         data = json.loads((out / "devcontainer.json").read_text())
-        assert data["name"] == "Python + Claude Code"
+        assert data["name"] == "Python + Claude Code CLI"
 
     def test_no_agent(self, runner: CliRunner, tmp_path: Path) -> None:
         out = tmp_path / ".devcontainer"
