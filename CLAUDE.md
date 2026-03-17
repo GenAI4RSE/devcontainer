@@ -8,6 +8,7 @@
 
 - **Package manager**: `uv`
 - **CLI framework**: `click`
+- **Linting/formatting**: `ruff` (check + format)
 - **Testing**: `pytest` with click's `CliRunner`
 - **Python**: >= 3.11
 - **Build backend**: `hatchling`
@@ -26,6 +27,8 @@ uv sync                                          # install dependencies
 uv run devcc create -l python -a claude-code     # generate .devcontainer/
 uv run devcc batch                               # generate all 36 templates
 uv run devcc validate                            # validate generated templates
+uv run ruff check src/ tests/                    # lint
+uv run ruff format src/ tests/                   # format
 uv run pytest                                    # run tests
 ```
 
