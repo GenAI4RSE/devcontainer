@@ -1,69 +1,115 @@
-# DevContainer Templates for AI Coding Agents
+# devcc
 
-Pre-configured [devcontainer](https://containers.dev/) templates for running AI coding agents in isolated, reproducible and more safe environments. Each template provides a fully set up development container for a specific language, with Claude Code CLI pre-installed.
+`devcc` creates [devcontainer](https://containers.dev/) templates for running AI coding agents in isolated, reproducible environments. Pick a language, pick an agent, and get a ready-to-use `.devcontainer/`.
 
+## Installation
 
-## Quick Start
+```bash
+pip install devcc
+```
 
-1. Copy the files for your language into your project:
+## Step 1: See What languages and agents are available
 
-   ```bash
-   # Example: Python
-   mkdir -p .devcontainer
-   cp devcontainer/python/devcontainer.json .devcontainer/
-   cp devcontainer/common-setup.sh .devcontainer/
-   cp devcontainer/zsh-custom.sh .devcontainer/
-   ```
+```bash
+devcc list
+```
 
-2. Open the project in VS Code and select **Reopen in Container**.
+```
+Languages:
+  python               Python                    (default: 3.12)
+  node                 TypeScript / Node.js      (default: 22)
+  rust                 Rust                      (default: latest)
+  r                    R                         (default: release)
+  julia                Julia                     (default: latest)
+  c-cpp-fortran        C / C++ / Fortran         (default: latest)
 
-3. Once the container starts, Claude Code is ready to use:
+Agents:
+  claude-code          Claude Code CLI
+  codex                Codex
+  copilot              Copilot CLI
+  cursor               Cursor CLI
+  gemini               Gemini CLI
+```
 
-   ```bash
-   claude
-   ```
+## Step 2: Generate a devcontainer template
 
-## Supported Languages
+Go to your project repository and run:
 
-| Template | Language / Runtime | Version | VS Code Extension |
-|---|---|---|---|
-| `python/` | Python | 3.12 | `ms-python.python` |
-| `c-cpp-fortran/` | C / C++ / Fortran | gcc, gfortran, gdb, CMake, fpm | `ms-vscode.cpptools` |
-| `rust/` | Rust | latest | `rust-lang.rust-analyzer` |
-| `r/` | R | release | `REditorSupport.r` |
-| `julia/` | Julia | latest | `julialang.language-julia` |
-| `node/` | TypeScript / Node.js | 22 | -- |
+```bash
+cd /path/to/your/project
+devcc create -l python -a claude-code
+```
 
-## Common Features
+This creates a `.devcontainer/` folder in your project:
 
-All templates share:
+```
+.devcontainer/
+├── devcontainer.json    # container configuration
+├── common-setup.sh      # system setup (volume permissions, git-delta)
+└── zsh-custom.sh        # shell customization (oh-my-zsh, autojump, aliases)
+```
 
-- **Base image:** Ubuntu 24.04
-- **Non-root user:** `neo` with zsh (oh-my-zsh) as default shell
-- **Claude Code CLI** installed automatically on container creation
-- **CLI tools:** jq, vim, bat, autojump, GitHub CLI, git-delta
-- **Workspace mount:** your project directory is automatically bind-mounted to `/workspace`
-- **Persistent volumes:** shell history and `~/.claude` config survive container rebuilds
+### More Examples
 
-## How It Works
+```bash
+# Pin a specific language version
+devcc create -l python:3.11 -a claude-code
 
-Each template is a single `devcontainer.json` that composes [devcontainer features](https://containers.dev/features) — no custom Dockerfiles needed. The container lifecycle runs two shared scripts:
+# Multiple languages in one container
+devcc create -l python,node -a claude-code
 
-- **`common-setup.sh`** (onCreateCommand) — configures UTF-8 locale, fixes Docker volume permissions for the `neo` user, and installs git-delta with retry logic.
-- **`zsh-custom.sh`** (postCreateCommand) — configures oh-my-zsh plugins, sets up autojump, aliases `bat` to `batcat`, and applies history timestamp formatting.
+# Multiple agents
+devcc create -l python -a claude-code,codex
 
-Claude Code CLI is installed via `curl -fsSL https://claude.ai/install.sh | bash` during `postCreateCommand`.
+# Language only, no agent
+devcc create -l rust
 
-## Customization
+# Custom output directory
+devcc create -l python -a claude-code -o my-devcontainer
+```
 
-You can easily customize the templates to fit your needs:
+## Step 3: Start the Dev Container
 
-- **New language:** Copy any template, swap the language feature, and update the VS Code extension.
-- **Additional packages:** Add to the `packages` list in the `apt-get-packages` feature.
-- **VS Code extensions:** Add to the `customizations.vscode.extensions` array.
-- **Use a different AI agent:** Replace the `claude-code` entry in `postCreateCommand` with the install command for your preferred agent (e.g., Aider, Codex CLI, or Gemini CLI).
-- **Firewall rules:** Restrict network access by adding `"runArgs": ["--network=none"]` to the `devcontainer.json`, or configure iptables rules in `common-setup.sh` to sandbox what the agent can reach.
+**Option A: VS Code**
 
+1. Open your project in VS Code
+2. Install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) if you haven't already
+3. Press `F1` and select **Dev Containers: Reopen in Container**
+4. VS Code builds the container and sets up your environment
 
-## Acknowledgements
-This work is inspired by the official [Claude Code development containers](https://code.claude.com/docs/en/devcontainer), which also demonstrate applying firewall rules to the container.
+**Option B: CLI** (using the [Dev Container CLI](https://github.com/devcontainers/cli))
+
+```bash
+# Install the CLI (once)
+npm install -g @devcontainers/cli
+
+# Build and start the container
+devcontainer up --workspace-folder .
+
+# Open a shell inside the container
+devcontainer exec --workspace-folder . zsh
+```
+
+Once inside the container, your agent is ready to use (e.g., run `claude` for Claude Code).
+
+## What You Get
+
+Every generated container includes:
+
+- **Ubuntu 24.04** base image
+- **Non-root user** `neo`
+- **Workspace mount:** your project is bind-mounted to `/workspace`
+- **Zsh and oh-my-zsh** with a custom theme and plugins
+- **Your language(s)** with the correct devcontainer feature and VS Code extension
+- **Your agent(s)** installed automatically on container creation
+- **Persistent volumes:** shell history and agent config survive container rebuilds
+
+## Validation
+
+Validate devcontainer templates against the [official devcontainer JSON schema](https://containers.dev/implementors/json_schema/):
+
+```bash
+devcc validate .devcontainer
+```
+
+You don't need to validate the `devcontainer.json` created by `devcc`. However, if you manually edit the generated `devcontainer.json`, you can run validation to ensure it remains compliant with the schema.
