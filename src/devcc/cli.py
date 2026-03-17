@@ -34,12 +34,44 @@ def main() -> None:
     """devcc — Generate devcontainer templates for AI coding agents."""
 
 
-@main.command()
-@click.option("-l", "--langs", required=True, help="Languages (e.g., python:3.11,node)")
-@click.option("-a", "--agents", default="", help="Agents (e.g., claude-code,codex)")
-@click.option("-o", "--output", default=".devcontainer", help="Output directory")
-def create(langs: str, agents: str, output: str) -> None:
-    """Generate a devcontainer template."""
+@main.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.option(
+    "-l",
+    "--langs",
+    required=False,
+    default=None,
+    help="\b\n"
+    "Comma-separated languages with optional version.\n"
+    "E.g., python, python:3.11, python:3.11,node:20.\n"
+    "Run 'devcc list-langs' to see available options.",
+)
+@click.option(
+    "-a",
+    "--agents",
+    default="",
+    help="\b\n"
+    "Comma-separated AI coding agents.\n"
+    "E.g., claude-code, claude-code,codex.\n"
+    "Optional — omit for a plain language template.\n"
+    "Run 'devcc list-agents' to see available options.",
+)
+@click.option(
+    "-o",
+    "--output",
+    default=".devcontainer",
+    show_default=True,
+    help="Output directory.",
+)
+@click.pass_context
+def create(ctx: click.Context, langs: str | None, agents: str, output: str) -> None:
+    """Generate a devcontainer template.
+
+    Create a template for the given language(s) and optional agent(s).
+    """
+    if not langs:
+        click.echo(ctx.get_help())
+        ctx.exit(0)
+        return
     languages = _parse_languages(langs)
     agent_list = _parse_agents(agents) if agents else []
     output_dir = Path(output)
@@ -47,28 +79,43 @@ def create(langs: str, agents: str, output: str) -> None:
     try:
         path = generate(languages, agent_list, output_dir)
     except (ValueError, RuntimeError) as e:
-        raise click.ClickException(str(e))
+        raise click.ClickException(str(e)) from None
 
     click.echo(f"Generated: {path}")
 
 
 @main.command()
-@click.option("-o", "--output", default="templates", help="Output directory")
+@click.option(
+    "-o",
+    "--output",
+    default="templates",
+    show_default=True,
+    help="Output directory.",
+)
 def batch(output: str) -> None:
-    """Generate all template combinations."""
+    """Generate all 36 template combinations.
+
+    \b
+    Produces 6 languages x (5 agents + no-agent) = 36 templates.
+    Each template gets its own directory with:
+      devcontainer.json, common-setup.sh, zsh-custom.sh
+    Directory naming: <lang> or <lang>-<agent>
+      e.g., python/, python-claude-code/, rust-codex/
+    All templates are auto-validated after generation.
+    """
     output_dir = Path(output)
 
     try:
         paths = generate_batch(output_dir)
     except (ValueError, RuntimeError) as e:
-        raise click.ClickException(str(e))
+        raise click.ClickException(str(e)) from None
 
     click.echo(f"Generated {len(paths)} templates in {output_dir}")
 
 
 @main.command("list-langs")
 def list_langs() -> None:
-    """List available languages."""
+    """List available languages and their default versions."""
     lang_dim = DIMENSIONS[0]
     for frag in list_available(lang_dim):
         click.echo(f"{frag['_id']:<20} {frag['_name']:<25} (default: {frag['_default_version']})")
@@ -76,7 +123,7 @@ def list_langs() -> None:
 
 @main.command("list-agents")
 def list_agents() -> None:
-    """List available agents."""
+    """List available AI coding agents."""
     agent_dim = DIMENSIONS[1]
     for frag in list_available(agent_dim):
         click.echo(f"{frag['_id']:<20} {frag['_name']}")
@@ -85,7 +132,10 @@ def list_agents() -> None:
 @main.command()
 @click.argument("path", default="templates")
 def validate(path: str) -> None:
-    """Validate generated templates."""
+    """Validate generated templates.
+
+    Checks against the official devcontainer schema and devcc rules.
+    """
     target = Path(path)
     if not target.exists():
         raise click.ClickException(f"Path does not exist: {target}")

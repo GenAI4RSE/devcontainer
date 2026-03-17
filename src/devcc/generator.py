@@ -32,7 +32,10 @@ def deep_merge(base: dict[str, Any], *overlays: dict[str, Any]) -> dict[str, Any
                     seen: set[str] = set()
                     merged: list[Any] = []
                     for item in result[key] + value:
-                        item_key = json.dumps(item, sort_keys=True) if isinstance(item, dict) else str(item)
+                        if isinstance(item, dict):
+                            item_key = json.dumps(item, sort_keys=True)
+                        else:
+                            item_key = str(item)
                         if item_key not in seen:
                             seen.add(item_key)
                             merged.append(item)
@@ -72,7 +75,9 @@ def resolve_custom_keys(
         agent_id = frag["_id"]
         config_dir = frag["_config_dir"]
         env_key = agent_id.replace("-", "_").upper() + "_CONFIG_DIR"
-        mount = f"source=devcc-{agent_id}-config-${{devcontainerId}},target={config_dir},type=volume"
+        mount = (
+            f"source=devcc-{agent_id}-config-${{devcontainerId}},target={config_dir},type=volume"
+        )
         result.setdefault("mounts", []).append(mount)
         result.setdefault("containerEnv", {})[env_key] = config_dir
 

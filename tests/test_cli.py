@@ -52,9 +52,10 @@ class TestCreate:
         result = runner.invoke(main, ["create", "-l", "cobol", "-o", str(out)])
         assert result.exit_code != 0
 
-    def test_missing_language(self, runner: CliRunner, tmp_path: Path) -> None:
+    def test_missing_language_shows_help(self, runner: CliRunner, tmp_path: Path) -> None:
         result = runner.invoke(main, ["create", "-o", str(tmp_path)])
-        assert result.exit_code != 0
+        assert result.exit_code == 0
+        assert "Usage:" in result.output
 
 
 class TestBatch:
