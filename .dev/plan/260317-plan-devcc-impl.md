@@ -347,23 +347,13 @@ Write `src/devcc/data/agents/cursor.json`:
 
 - [ ] **Step 4: Create shell script base template**
 
-Write `src/devcc/data/shared/common-setup.sh` (base template — generator appends agent chown lines):
+Write `src/devcc/data/shared/common-setup.sh` (base template — generator appends agent chown lines).
+Locale settings (LANG/LC_ALL) are handled exclusively by `containerEnv` and NOT duplicated here:
 ```bash
 #!/bin/bash
 # Shared setup for all devcontainers — runs in onCreateCommand
 
 set -e
-
-# Set UTF-8 locale system-wide
-echo "Configuring UTF-8 locale..."
-sudo tee /etc/default/locale > /dev/null << 'LOCALE'
-LANG=en_US.UTF-8
-LC_ALL=en_US.UTF-8
-LOCALE
-sudo tee /etc/profile.d/locale.sh > /dev/null << 'PROF'
-export LANG=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
-PROF
 
 # Fix volume permissions (Docker volumes default to root ownership)
 echo "Fixing volume permissions..."
@@ -384,17 +374,14 @@ else
 fi
 ```
 
-Write `src/devcc/data/shared/zsh-custom.sh` (static — copied as-is):
+Write `src/devcc/data/shared/zsh-custom.sh` (static — copied as-is).
+Locale settings are NOT included here (handled by `containerEnv`):
 ```bash
 # oh-my-zsh plugins
 sed -i 's/^plugins=.*/plugins=(git)/' ~/.zshrc
 
 # Custom settings appended to .zshrc
 cat >> ~/.zshrc << 'EOF'
-
-# UTF-8 locale
-export LANG=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
 
 # Timestamp format for history
 HIST_STAMPS="yyyy-mm-dd"

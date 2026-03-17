@@ -219,9 +219,9 @@ templates/
 
 Shell scripts (`common-setup.sh`, `zsh-custom.sh`) are shipped as package data under `data/shared/` and copied into each output directory.
 
-**`common-setup.sh` is generated from a base template.** The base template is stored in `data/shared/common-setup.sh` and contains locale setup and git-delta installation. At generation time, the generator reads this base template and appends agent-specific `chown` lines for each selected agent's config directory mount. When no agent is selected, no agent `chown` lines are appended. The bash history volume `chown` is always included in the base template.
+**`common-setup.sh` is generated from a base template.** The base template is stored in `data/shared/common-setup.sh` and contains volume permission fixes (bash history `chown`) and git-delta installation. Locale settings (LANG, LC_ALL) are handled exclusively by `containerEnv` and are NOT duplicated in shell scripts. At generation time, the generator reads this base template and appends agent-specific `chown` lines for each selected agent's config directory mount. When no agent is selected, no agent `chown` lines are appended.
 
-**`zsh-custom.sh` is static** — it configures oh-my-zsh, autojump, and aliases, with no agent-specific content.
+**`zsh-custom.sh` is static** — it configures oh-my-zsh plugins, history timestamps, autojump sourcing, and the `bat`→`batcat` alias. Locale settings are NOT included (handled by `containerEnv`).
 
 ## Validator
 
