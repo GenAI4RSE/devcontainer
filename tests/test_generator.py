@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -187,3 +189,99 @@ class TestResolveCustomKeys:
         assert result["containerEnv"]["CLAUDE_CODE_CONFIG_DIR"] == "/home/neo/.claude"
         assert result["containerEnv"]["CODEX_CONFIG_DIR"] == "/home/neo/.codex"
         assert NODE_FEATURE_KEY in result["features"]
+
+
+from devcc.generator import build_setup_script, generate, generate_batch
+
+
+class TestBuildSetupScript:
+    def test_no_agents(self) -> None:
+        script = build_setup_script([])
+        assert "chown -R neo:neo /commandhistory" in script
+        assert "/home/neo/.claude" not in script
+
+    def test_with_agent(self) -> None:
+        agent_frags = [{"_id": "claude-code", "_name": "Claude Code",
+                         "_install_command": "x", "_config_dir": "/home/neo/.claude",
+                         "_requires_node": False}]
+        script = build_setup_script(agent_frags)
+        assert "chown -R neo:neo /home/neo/.claude" in script
+
+    def test_multiple_agents(self) -> None:
+        agent_frags = [
+            {"_id": "claude-code", "_name": "CC", "_install_command": "x",
+             "_config_dir": "/home/neo/.claude", "_requires_node": False},
+            {"_id": "codex", "_name": "Codex", "_install_command": "x",
+             "_config_dir": "/home/neo/.codex", "_requires_node": True},
+        ]
+        script = build_setup_script(agent_frags)
+        assert "chown -R neo:neo /home/neo/.claude" in script
+        assert "chown -R neo:neo /home/neo/.codex" in script
+
+
+class TestGenerate:
+    def test_python_claude_code(self, tmp_output: Path) -> None:
+        result = generate([("python", None)], ["claude-code"], tmp_output)
+        assert result == tmp_output
+        assert (tmp_output / "devcontainer.json").exists()
+        assert (tmp_output / "common-setup.sh").exists()
+        assert (tmp_output / "zsh-custom.sh").exists()
+        data = json.loads((tmp_output / "devcontainer.json").read_text())
+        assert data["name"] == "Python + Claude Code"
+        assert "ghcr.io/devcontainers/features/python:1" in data["features"]
+        assert "claude-code" in data["postCreateCommand"]
+        assert not any(k.startswith("_") for k in data)
+
+    def test_no_agent(self, tmp_output: Path) -> None:
+        result = generate([("rust", None)], [], tmp_output)
+        data = json.loads((tmp_output / "devcontainer.json").read_text())
+        assert data["name"] == "Rust"
+        assert "postCreateCommand" in data
+        assert len(data["postCreateCommand"]) == 1  # only zsh-custom
+        setup = (tmp_output / "common-setup.sh").read_text()
+        assert "/home/neo/.claude" not in setup
+
+    def test_version_override(self, tmp_output: Path) -> None:
+        generate([("python", "3.11")], [], tmp_output)
+        data = json.loads((tmp_output / "devcontainer.json").read_text())
+        assert data["features"]["ghcr.io/devcontainers/features/python:1"]["version"] == "3.11"
+
+    def test_node_dedup(self, tmp_output: Path) -> None:
+        generate([("node", "20")], ["codex"], tmp_output)
+        data = json.loads((tmp_output / "devcontainer.json").read_text())
+        # Language version takes precedence — injection skipped entirely
+        assert data["features"]["ghcr.io/devcontainers/features/node:1"]["version"] == "20"
+
+    def test_unknown_language_raises(self, tmp_output: Path) -> None:
+        with pytest.raises(ValueError, match="Unknown languages ID"):
+            generate([("nonexistent", None)], [], tmp_output)
+
+    def test_unknown_agent_raises(self, tmp_output: Path) -> None:
+        with pytest.raises(ValueError, match="Unknown agents ID"):
+            generate([("python", None)], ["nonexistent"], tmp_output)
+
+    def test_json_formatting(self, tmp_output: Path) -> None:
+        generate([("python", None)], [], tmp_output)
+        text = (tmp_output / "devcontainer.json").read_text()
+        assert text.endswith("\n")
+        # 2-space indent: second line should start with 2 spaces
+        lines = text.splitlines()
+        assert lines[1].startswith("  ")
+        assert not lines[1].startswith("    ")
+
+
+class TestGenerateBatch:
+    def test_generates_36_directories(self, tmp_output: Path) -> None:
+        paths = generate_batch(tmp_output)
+        assert len(paths) == 36
+        # Each should have the 3 output files
+        for p in paths:
+            assert (p / "devcontainer.json").exists()
+            assert (p / "common-setup.sh").exists()
+            assert (p / "zsh-custom.sh").exists()
+
+    def test_directory_naming(self, tmp_output: Path) -> None:
+        generate_batch(tmp_output)
+        assert (tmp_output / "python").exists()
+        assert (tmp_output / "python-claude-code").exists()
+        assert (tmp_output / "c-cpp-fortran-codex").exists()
