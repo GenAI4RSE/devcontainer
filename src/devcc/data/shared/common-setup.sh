@@ -3,10 +3,6 @@
 
 set -e
 
-# Fix volume permissions (Docker volumes default to root ownership)
-echo "Fixing volume permissions..."
-sudo chown -R neo:neo /commandhistory
-
 # Install git-delta (non-fatal — network may be slow)
 echo "Installing git-delta ${GIT_DELTA_VERSION}..."
 ARCH=$(dpkg --print-architecture)
@@ -20,3 +16,7 @@ else
   echo "WARNING: git-delta installation failed (network issue?). Skipping."
   rm -f /tmp/git-delta.deb
 fi
+
+# Fix volume permissions (Docker volumes default to root ownership)
+echo "Fixing volume permissions..."
+sudo chown -R neo:neo /commandhistory
