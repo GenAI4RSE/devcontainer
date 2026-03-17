@@ -70,22 +70,17 @@ class TestBatch:
         assert len(dirs) == 36
 
 
-class TestListLangs:
-    def test_lists_all_languages(self, runner: CliRunner) -> None:
-        result = runner.invoke(main, ["list-langs"])
+class TestList:
+    def test_lists_all_languages_and_agents(self, runner: CliRunner) -> None:
+        result = runner.invoke(main, ["list"])
         assert result.exit_code == 0
+        assert "Languages:" in result.output
         assert "python" in result.output
         assert "node" in result.output
         assert "rust" in result.output
-        assert "r" in result.output
         assert "julia" in result.output
         assert "c-cpp-fortran" in result.output
-
-
-class TestListAgents:
-    def test_lists_all_agents(self, runner: CliRunner) -> None:
-        result = runner.invoke(main, ["list-agents"])
-        assert result.exit_code == 0
+        assert "Agents:" in result.output
         assert "claude-code" in result.output
         assert "codex" in result.output
         assert "copilot" in result.output

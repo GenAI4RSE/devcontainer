@@ -46,7 +46,7 @@ def main() -> None:
     help="\b\n"
     "Comma-separated languages with optional version.\n"
     "E.g., python, python:3.11, python:3.11,node:20.\n"
-    "Run 'devcc list-langs' to see available options.",
+    "Run 'devcc list' to see available options.",
 )
 @click.option(
     "-a",
@@ -56,7 +56,7 @@ def main() -> None:
     "Comma-separated AI coding agents.\n"
     "E.g., claude-code, claude-code,codex.\n"
     "Optional — omit for a plain language template.\n"
-    "Run 'devcc list-agents' to see available options.",
+    "Run 'devcc list' to see available options.",
 )
 @click.option(
     "-o",
@@ -120,26 +120,26 @@ def batch(output: str) -> None:
     click.echo(f"Generated {len(paths)} templates in {output_dir}")
 
 
-@main.command("list-langs")
-def list_langs() -> None:
-    """List available languages and their default versions."""
+@main.command("list")
+def list_options() -> None:
+    """List available languages and agents."""
     lang_dim = DIMENSIONS[0]
-    for frag in list_available(lang_dim):
-        click.echo(f"{frag['_id']:<20} {frag['_name']:<25} (default: {frag['_default_version']})")
-
-
-@main.command("list-agents")
-def list_agents() -> None:
-    """List available AI coding agents."""
     agent_dim = DIMENSIONS[1]
+
+    click.echo("Languages:")
+    for frag in list_available(lang_dim):
+        click.echo(f"  {frag['_id']:<20} {frag['_name']:<25} (default: {frag['_default_version']})")
+
+    click.echo()
+    click.echo("Agents:")
     for frag in list_available(agent_dim):
-        click.echo(f"{frag['_id']:<20} {frag['_name']}")
+        click.echo(f"  {frag['_id']:<20} {frag['_name']}")
 
 
 @main.command()
 @click.argument("path", default="templates")
 def validate(path: str) -> None:
-    """Validate generated templates.
+    """Validate generated devcontainers.
 
     Checks against the official devcontainer schema and devcc rules.
     """

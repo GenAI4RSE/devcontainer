@@ -1,6 +1,6 @@
 {
   "_id": "codex",
-  "_name": "Codex",
+  "_name": "Codex CLI",
   "_install_command": "npm install -g @openai/codex",
   "_config_dir": "/home/neo/.codex",
   "_requires_node": true
