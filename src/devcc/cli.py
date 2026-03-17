@@ -67,9 +67,13 @@ def main() -> None:
 )
 @click.pass_context
 def create(ctx: click.Context, langs: str | None, agents: str, output: str) -> None:
-    """Generate a devcontainer template.
+    """Create a devcontainer from one or more languages and agents.
 
-    Create a template for the given language(s) and optional agent(s).
+    \b
+    Supports multiple languages and agents in a single template:
+      devcc create -l python                        # language only
+      devcc create -l python -a claude-code         # with an agent
+      devcc create -l python:3.11,node:20 -a codex  # multi-lang + version
     """
     if not langs:
         click.echo(ctx.get_help())
