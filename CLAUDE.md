@@ -32,13 +32,3 @@ uv run ruff check src/ tests/                    # lint
 uv run ruff format src/ tests/                   # format
 uv run pytest                                    # run tests
 ```
-
-## Supported Agents
-
-| Agent | Install Command | Config Dir |
-|---|---|---|
-| Claude Code | `curl -fsSL https://claude.ai/install.sh \| bash` | `~/.claude` |
-| Codex | `npm install -g @openai/codex` | `~/.codex` |
-| Copilot CLI | `npm install -g @github/copilot` | `~/.copilot` |
-| Gemini CLI | `npm install -g @google/gemini-cli` | `~/.gemini` |
-| Cursor CLI | `curl https://cursor.com/install -fsS \| bash` | `~/.cursor` |
