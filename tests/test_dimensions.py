@@ -4,7 +4,6 @@ import pytest
 
 from devcc.dimensions import (
     DIMENSIONS,
-    DimensionConfig,
     get_data_path,
     list_available,
     load_dimension_fragment,

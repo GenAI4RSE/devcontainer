@@ -8,7 +8,16 @@ from typing import Any
 
 import pytest
 
-from devcc.generator import deep_merge
+from devcc.generator import (
+    build_setup_script,
+    deep_merge,
+    generate,
+    generate_batch,
+    resolve_custom_keys,
+)
+
+APT_FEATURE_KEY = "ghcr.io/devcontainers-extra/features/apt-get-packages:1"
+NODE_FEATURE_KEY = "ghcr.io/devcontainers/features/node:1"
 
 
 class TestDeepMerge:
@@ -72,12 +81,6 @@ class TestDeepMerge:
         assert result == {"a": 1}
 
 
-from devcc.generator import resolve_custom_keys
-
-APT_FEATURE_KEY = "ghcr.io/devcontainers-extra/features/apt-get-packages:1"
-NODE_FEATURE_KEY = "ghcr.io/devcontainers/features/node:1"
-
-
 class TestResolveCustomKeys:
     def _base_merged(self) -> dict[str, Any]:
         """Minimal merged dict simulating base + language."""
@@ -87,7 +90,9 @@ class TestResolveCustomKeys:
                 APT_FEATURE_KEY: {"packages": "jq,vim,bat,autojump"},
             },
             "postCreateCommand": {"zsh-custom": "bash .devcontainer/zsh-custom.sh"},
-            "mounts": ["source=devcc-bashhistory-${devcontainerId},target=/commandhistory,type=volume"],
+            "mounts": [
+                "source=devcc-bashhistory-${devcontainerId},target=/commandhistory,type=volume"
+            ],
             "containerEnv": {},
             "customizations": {"vscode": {"extensions": []}},
             "_id": "python",
@@ -96,39 +101,74 @@ class TestResolveCustomKeys:
 
     def test_extra_apt_packages_appended(self) -> None:
         merged = self._base_merged()
-        lang_frags = [{"_id": "c-cpp-fortran", "_name": "C", "_extra_apt_packages": ["gcc", "gdb"],
-                        "_default_version": "latest", "_feature_key": "x", "_version_param": "version"}]
+        lang_frags = [
+            {
+                "_id": "c-cpp-fortran",
+                "_name": "C",
+                "_extra_apt_packages": ["gcc", "gdb"],
+                "_default_version": "latest",
+                "_feature_key": "x",
+                "_version_param": "version",
+            }
+        ]
         result = resolve_custom_keys(merged, lang_frags, [], {})
         assert result["features"][APT_FEATURE_KEY]["packages"] == "jq,vim,bat,autojump,gcc,gdb"
 
     def test_no_extra_apt_packages(self) -> None:
         merged = self._base_merged()
-        lang_frags = [{"_id": "python", "_name": "Python", "_extra_apt_packages": [],
-                        "_default_version": "3.12", "_feature_key": "x", "_version_param": "version"}]
+        lang_frags = [
+            {
+                "_id": "python",
+                "_name": "Python",
+                "_extra_apt_packages": [],
+                "_default_version": "3.12",
+                "_feature_key": "x",
+                "_version_param": "version",
+            }
+        ]
         result = resolve_custom_keys(merged, lang_frags, [], {})
         assert result["features"][APT_FEATURE_KEY]["packages"] == "jq,vim,bat,autojump"
 
     def test_agent_install_command(self) -> None:
         merged = self._base_merged()
-        agent_frags = [{"_id": "claude-code", "_name": "Claude Code",
-                         "_install_command": "curl install.sh | bash",
-                         "_config_dir": "/home/neo/.claude", "_requires_node": False}]
+        agent_frags = [
+            {
+                "_id": "claude-code",
+                "_name": "Claude Code",
+                "_install_command": "curl install.sh | bash",
+                "_config_dir": "/home/neo/.claude",
+                "_requires_node": False,
+            }
+        ]
         result = resolve_custom_keys(merged, [], agent_frags, {})
         assert result["postCreateCommand"]["claude-code"] == "curl install.sh | bash"
 
     def test_agent_config_dir_mount_and_env(self) -> None:
         merged = self._base_merged()
-        agent_frags = [{"_id": "claude-code", "_name": "Claude Code",
-                         "_install_command": "install", "_config_dir": "/home/neo/.claude",
-                         "_requires_node": False}]
+        agent_frags = [
+            {
+                "_id": "claude-code",
+                "_name": "Claude Code",
+                "_install_command": "install",
+                "_config_dir": "/home/neo/.claude",
+                "_requires_node": False,
+            }
+        ]
         result = resolve_custom_keys(merged, [], agent_frags, {})
         assert any("/home/neo/.claude" in m for m in result["mounts"])
         assert result["containerEnv"]["CLAUDE_CODE_CONFIG_DIR"] == "/home/neo/.claude"
 
     def test_requires_node_injects_feature(self) -> None:
         merged = self._base_merged()
-        agent_frags = [{"_id": "codex", "_name": "Codex", "_install_command": "npm i codex",
-                         "_config_dir": "/home/neo/.codex", "_requires_node": True}]
+        agent_frags = [
+            {
+                "_id": "codex",
+                "_name": "Codex",
+                "_install_command": "npm i codex",
+                "_config_dir": "/home/neo/.codex",
+                "_requires_node": True,
+            }
+        ]
         result = resolve_custom_keys(merged, [], agent_frags, {})
         assert NODE_FEATURE_KEY in result["features"]
         assert result["features"][NODE_FEATURE_KEY]["version"] == "22"
@@ -136,8 +176,15 @@ class TestResolveCustomKeys:
     def test_requires_node_skips_when_node_lang_present(self) -> None:
         merged = self._base_merged()
         merged["features"][NODE_FEATURE_KEY] = {"version": "20"}
-        agent_frags = [{"_id": "codex", "_name": "Codex", "_install_command": "npm i codex",
-                         "_config_dir": "/home/neo/.codex", "_requires_node": True}]
+        agent_frags = [
+            {
+                "_id": "codex",
+                "_name": "Codex",
+                "_install_command": "npm i codex",
+                "_config_dir": "/home/neo/.codex",
+                "_requires_node": True,
+            }
+        ]
         result = resolve_custom_keys(merged, [], agent_frags, {})
         assert result["features"][NODE_FEATURE_KEY]["version"] == "20"
 
@@ -145,43 +192,91 @@ class TestResolveCustomKeys:
         merged = self._base_merged()
         feature_key = "ghcr.io/devcontainers/features/python:1"
         merged["features"][feature_key] = {"version": "3.12"}
-        lang_frags = [{"_id": "python", "_name": "Python", "_extra_apt_packages": [],
-                        "_default_version": "3.12", "_feature_key": feature_key,
-                        "_version_param": "version"}]
+        lang_frags = [
+            {
+                "_id": "python",
+                "_name": "Python",
+                "_extra_apt_packages": [],
+                "_default_version": "3.12",
+                "_feature_key": feature_key,
+                "_version_param": "version",
+            }
+        ]
         result = resolve_custom_keys(merged, lang_frags, [], {"python": "3.11"})
         assert result["features"][feature_key]["version"] == "3.11"
 
     def test_name_lang_only(self) -> None:
         merged = self._base_merged()
-        lang_frags = [{"_id": "python", "_name": "Python", "_extra_apt_packages": [],
-                        "_default_version": "3.12", "_feature_key": "x", "_version_param": "v"}]
+        lang_frags = [
+            {
+                "_id": "python",
+                "_name": "Python",
+                "_extra_apt_packages": [],
+                "_default_version": "3.12",
+                "_feature_key": "x",
+                "_version_param": "v",
+            }
+        ]
         result = resolve_custom_keys(merged, lang_frags, [], {})
         assert result["name"] == "Python"
 
     def test_name_lang_and_agent(self) -> None:
         merged = self._base_merged()
-        lang_frags = [{"_id": "python", "_name": "Python", "_extra_apt_packages": [],
-                        "_default_version": "3.12", "_feature_key": "x", "_version_param": "v"}]
-        agent_frags = [{"_id": "cc", "_name": "Claude Code", "_install_command": "x",
-                         "_config_dir": "/x", "_requires_node": False}]
+        lang_frags = [
+            {
+                "_id": "python",
+                "_name": "Python",
+                "_extra_apt_packages": [],
+                "_default_version": "3.12",
+                "_feature_key": "x",
+                "_version_param": "v",
+            }
+        ]
+        agent_frags = [
+            {
+                "_id": "cc",
+                "_name": "Claude Code",
+                "_install_command": "x",
+                "_config_dir": "/x",
+                "_requires_node": False,
+            }
+        ]
         result = resolve_custom_keys(merged, lang_frags, agent_frags, {})
         assert result["name"] == "Python + Claude Code"
 
     def test_all_custom_keys_stripped(self) -> None:
         merged = self._base_merged()
         merged["_extra_field"] = "should be removed"
-        lang_frags = [{"_id": "python", "_name": "Python", "_extra_apt_packages": [],
-                        "_default_version": "3.12", "_feature_key": "x", "_version_param": "v"}]
+        lang_frags = [
+            {
+                "_id": "python",
+                "_name": "Python",
+                "_extra_apt_packages": [],
+                "_default_version": "3.12",
+                "_feature_key": "x",
+                "_version_param": "v",
+            }
+        ]
         result = resolve_custom_keys(merged, lang_frags, [], {})
         assert not any(k.startswith("_") for k in result)
 
     def test_multi_agent(self) -> None:
         merged = self._base_merged()
         agent_frags = [
-            {"_id": "claude-code", "_name": "Claude Code", "_install_command": "curl install",
-             "_config_dir": "/home/neo/.claude", "_requires_node": False},
-            {"_id": "codex", "_name": "Codex", "_install_command": "npm i codex",
-             "_config_dir": "/home/neo/.codex", "_requires_node": True},
+            {
+                "_id": "claude-code",
+                "_name": "Claude Code",
+                "_install_command": "curl install",
+                "_config_dir": "/home/neo/.claude",
+                "_requires_node": False,
+            },
+            {
+                "_id": "codex",
+                "_name": "Codex",
+                "_install_command": "npm i codex",
+                "_config_dir": "/home/neo/.codex",
+                "_requires_node": True,
+            },
         ]
         result = resolve_custom_keys(merged, [], agent_frags, {})
         assert "claude-code" in result["postCreateCommand"]
@@ -191,9 +286,6 @@ class TestResolveCustomKeys:
         assert NODE_FEATURE_KEY in result["features"]
 
 
-from devcc.generator import build_setup_script, generate, generate_batch
-
-
 class TestBuildSetupScript:
     def test_no_agents(self) -> None:
         script = build_setup_script([])
@@ -201,18 +293,34 @@ class TestBuildSetupScript:
         assert "/home/neo/.claude" not in script
 
     def test_with_agent(self) -> None:
-        agent_frags = [{"_id": "claude-code", "_name": "Claude Code",
-                         "_install_command": "x", "_config_dir": "/home/neo/.claude",
-                         "_requires_node": False}]
+        agent_frags = [
+            {
+                "_id": "claude-code",
+                "_name": "Claude Code",
+                "_install_command": "x",
+                "_config_dir": "/home/neo/.claude",
+                "_requires_node": False,
+            }
+        ]
         script = build_setup_script(agent_frags)
         assert "chown -R neo:neo /home/neo/.claude" in script
 
     def test_multiple_agents(self) -> None:
         agent_frags = [
-            {"_id": "claude-code", "_name": "CC", "_install_command": "x",
-             "_config_dir": "/home/neo/.claude", "_requires_node": False},
-            {"_id": "codex", "_name": "Codex", "_install_command": "x",
-             "_config_dir": "/home/neo/.codex", "_requires_node": True},
+            {
+                "_id": "claude-code",
+                "_name": "CC",
+                "_install_command": "x",
+                "_config_dir": "/home/neo/.claude",
+                "_requires_node": False,
+            },
+            {
+                "_id": "codex",
+                "_name": "Codex",
+                "_install_command": "x",
+                "_config_dir": "/home/neo/.codex",
+                "_requires_node": True,
+            },
         ]
         script = build_setup_script(agent_frags)
         assert "chown -R neo:neo /home/neo/.claude" in script
@@ -233,7 +341,7 @@ class TestGenerate:
         assert not any(k.startswith("_") for k in data)
 
     def test_no_agent(self, tmp_output: Path) -> None:
-        result = generate([("rust", None)], [], tmp_output)
+        generate([("rust", None)], [], tmp_output)
         data = json.loads((tmp_output / "devcontainer.json").read_text())
         assert data["name"] == "Rust"
         assert "postCreateCommand" in data

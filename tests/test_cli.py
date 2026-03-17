@@ -19,7 +19,9 @@ def runner() -> CliRunner:
 class TestCreate:
     def test_python_claude_code(self, runner: CliRunner, tmp_path: Path) -> None:
         out = tmp_path / ".devcontainer"
-        result = runner.invoke(main, ["create", "-l", "python", "-a", "claude-code", "-o", str(out)])
+        result = runner.invoke(
+            main, ["create", "-l", "python", "-a", "claude-code", "-o", str(out)]
+        )
         assert result.exit_code == 0, result.output
         assert (out / "devcontainer.json").exists()
         data = json.loads((out / "devcontainer.json").read_text())
@@ -41,7 +43,9 @@ class TestCreate:
 
     def test_multi_lang(self, runner: CliRunner, tmp_path: Path) -> None:
         out = tmp_path / ".devcontainer"
-        result = runner.invoke(main, ["create", "-l", "python,node", "-a", "claude-code", "-o", str(out)])
+        result = runner.invoke(
+            main, ["create", "-l", "python,node", "-a", "claude-code", "-o", str(out)]
+        )
         assert result.exit_code == 0, result.output
         data = json.loads((out / "devcontainer.json").read_text())
         assert "Python" in data["name"]

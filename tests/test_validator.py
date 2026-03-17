@@ -6,9 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-import pytest
-
-from devcc.validator import validate_devcontainer_json, validate_directory, validate_batch
+from devcc.validator import validate_batch, validate_devcontainer_json, validate_directory
 
 
 def _write_valid_template(d: Path) -> dict[str, Any]:
