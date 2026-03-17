@@ -85,7 +85,7 @@ def resolve_custom_keys(
     needs_node = any(frag.get("_requires_node", False) for frag in agent_fragments)
     has_node = NODE_FEATURE_KEY in result.get("features", {})
     if needs_node and not has_node:
-        result["features"][NODE_FEATURE_KEY] = {"version": "22"}
+        result["features"][NODE_FEATURE_KEY] = {"version": "latest"}
 
     # 5. Version overrides
     for frag in lang_fragments:

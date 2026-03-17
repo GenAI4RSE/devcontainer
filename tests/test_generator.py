@@ -171,7 +171,7 @@ class TestResolveCustomKeys:
         ]
         result = resolve_custom_keys(merged, [], agent_frags, {})
         assert NODE_FEATURE_KEY in result["features"]
-        assert result["features"][NODE_FEATURE_KEY]["version"] == "22"
+        assert result["features"][NODE_FEATURE_KEY]["version"] == "latest"
 
     def test_requires_node_skips_when_node_lang_present(self) -> None:
         merged = self._base_merged()
