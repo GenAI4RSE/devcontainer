@@ -18,7 +18,7 @@ def _write_valid_template(d: Path) -> dict[str, Any]:
     }
     d.mkdir(parents=True, exist_ok=True)
     (d / "devcontainer.json").write_text(json.dumps(data, indent=2) + "\n")
-    (d / "common-setup.sh").write_text("#!/bin/bash\n")
+    (d / "system-setup.sh").write_text("#!/bin/bash\n")
     (d / "zsh-custom.sh").write_text("#!/bin/bash\n")
     return data
 
@@ -55,7 +55,7 @@ class TestValidateDirectory:
     def test_missing_devcontainer_json(self, tmp_path: Path) -> None:
         d = tmp_path / "template"
         d.mkdir()
-        (d / "common-setup.sh").write_text("#!/bin/bash\n")
+        (d / "system-setup.sh").write_text("#!/bin/bash\n")
         (d / "zsh-custom.sh").write_text("#!/bin/bash\n")
         errors = validate_directory(d)
         assert any("devcontainer.json" in e for e in errors)
@@ -63,9 +63,9 @@ class TestValidateDirectory:
     def test_missing_setup_script(self, tmp_path: Path) -> None:
         d = tmp_path / "template"
         _write_valid_template(d)
-        (d / "common-setup.sh").unlink()
+        (d / "system-setup.sh").unlink()
         errors = validate_directory(d)
-        assert any("common-setup.sh" in e for e in errors)
+        assert any("system-setup.sh" in e for e in errors)
 
     def test_missing_zsh_script(self, tmp_path: Path) -> None:
         d = tmp_path / "template"

@@ -119,8 +119,8 @@ def _strip_custom_keys(d: dict[str, Any]) -> dict[str, Any]:
 
 
 def build_setup_script(agent_fragments: list[dict[str, Any]]) -> str:
-    """Build common-setup.sh from base template + agent chown lines."""
-    base_path = get_data_path() / "shared" / "common-setup.sh"
+    """Build system-setup.sh from base template + agent chown lines."""
+    base_path = get_data_path() / "shared" / "system-setup.sh"
     with open(base_path) as f:
         script = f.read()
 
@@ -144,8 +144,8 @@ def write_output(
         json.dump(resolved, f, indent=2)
         f.write("\n")
 
-    # common-setup.sh — generated from template
-    (output_dir / "common-setup.sh").write_text(build_setup_script(agent_fragments))
+    # system-setup.sh — generated from template
+    (output_dir / "system-setup.sh").write_text(build_setup_script(agent_fragments))
 
     # zsh-custom.sh — static copy
     zsh_src = get_data_path() / "shared" / "zsh-custom.sh"

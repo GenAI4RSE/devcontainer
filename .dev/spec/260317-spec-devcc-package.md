@@ -16,7 +16,7 @@ Contains everything shared across all templates. All of the following fields are
 - `image`: `"ubuntu:24.04"`
 - `init`: `true`
 - `features`: common-utils (user "neo", zsh), github-cli, apt-get-packages (`"jq,vim,bat,autojump"`)
-- `onCreateCommand`: `{ "system-setup": "bash .devcontainer/common-setup.sh" }`
+- `onCreateCommand`: `{ "system-setup": "bash .devcontainer/system-setup.sh" }`
 - `postCreateCommand`: `{ "zsh-custom": "bash .devcontainer/zsh-custom.sh" }`
 - `waitFor`: `"postCreateCommand"`
 - `customizations`: `{ "vscode": { "extensions": [] } }`
@@ -178,7 +178,7 @@ Single pass over the merged dict:
 
 1. **`_extra_apt_packages`**: Collect from all fragments into a single list. Join with commas and append to the base `apt-get-packages` string (e.g., `"jq,vim,bat,autojump"` becomes `"jq,vim,bat,autojump,build-essential,gfortran,gdb"`).
 2. **`_install_command` + `_id`** (agents): Add `postCreateCommand[agent_id] = install_command`
-3. **`_config_dir`** (agents): Add mount (`source=devcc-{agent_id}-config-${devcontainerId},target={config_dir},type=volume`) and `containerEnv[{AGENT_UPPER}_CONFIG_DIR] = config_dir` where `{AGENT_UPPER}` is the agent `_id` with hyphens replaced by underscores and uppercased (e.g., `claude-code` → `CLAUDE_CODE_CONFIG_DIR`). Also append a `chown` line to the generated `common-setup.sh`.
+3. **`_config_dir`** (agents): Add mount (`source=devcc-{agent_id}-config-${devcontainerId},target={config_dir},type=volume`) and `containerEnv[{AGENT_UPPER}_CONFIG_DIR] = config_dir` where `{AGENT_UPPER}` is the agent `_id` with hyphens replaced by underscores and uppercased (e.g., `claude-code` → `CLAUDE_CODE_CONFIG_DIR`). Also append a `chown` line to the generated `system-setup.sh`.
 4. **`_requires_node`**: If any agent has `true` and no Node.js feature key (`ghcr.io/devcontainers/features/node:1`) exists in `features`, inject it with `version: "22"`. If the `node` language is already selected, its version takes precedence — the injection is skipped entirely (not merged).
 5. **Version override**: If user specified a version for a language, overwrite `features[_feature_key][_version_param]`. Only the feature declared in `_feature_key` receives the override — other features in the same fragment (e.g., `fpm:1` in c-cpp-fortran) are not affected.
 6. **`name` field**: Build from language and agent display names (e.g., `"Python"`, `"Python + Claude Code"`, `"Python + Node.js + Claude Code + Codex"`)
@@ -197,7 +197,7 @@ Single generation writes to `<output_dir>/`:
 ```
 <output_dir>/
 ├── devcontainer.json
-├── common-setup.sh
+├── system-setup.sh
 └── zsh-custom.sh
 ```
 
@@ -213,9 +213,9 @@ templates/
 └── ...
 ```
 
-Shell scripts (`common-setup.sh`, `zsh-custom.sh`) are shipped as package data under `data/shared/` and copied into each output directory.
+Shell scripts (`system-setup.sh`, `zsh-custom.sh`) are shipped as package data under `data/shared/` and copied into each output directory.
 
-**`common-setup.sh` is generated from a base template.** The base template is stored in `data/shared/common-setup.sh` and contains volume permission fixes (bash history `chown`) and git-delta installation. Locale settings (LANG, LC_ALL) are handled exclusively by `containerEnv` and are NOT duplicated in shell scripts. At generation time, the generator reads this base template and appends agent-specific `chown` lines for each selected agent's config directory mount. When no agent is selected, no agent `chown` lines are appended.
+**`system-setup.sh` is generated from a base template.** The base template is stored in `data/shared/system-setup.sh` and contains volume permission fixes (bash history `chown`) and git-delta installation. Locale settings (LANG, LC_ALL) are handled exclusively by `containerEnv` and are NOT duplicated in shell scripts. At generation time, the generator reads this base template and appends agent-specific `chown` lines for each selected agent's config directory mount. When no agent is selected, no agent `chown` lines are appended.
 
 **`zsh-custom.sh` is static** — it configures oh-my-zsh plugins, history timestamps, autojump sourcing, and the `bat`→`batcat` alias. Locale settings are NOT included (handled by `containerEnv`).
 
@@ -228,7 +228,7 @@ Validate `devcontainer.json` against the official JSON schema from `https://cont
 ### Layer 2: devcc-specific checks
 
 - No `_`-prefixed custom keys remain in output
-- `common-setup.sh` and `zsh-custom.sh` exist alongside the JSON
+- `system-setup.sh` and `zsh-custom.sh` exist alongside the JSON
 - `name` field is non-empty
 
 ### Functions
@@ -275,7 +275,7 @@ Default output for `create` is `.devcontainer/` in the current directory. Defaul
 │           ├── base/base.json
 │           ├── languages/*.json
 │           ├── agents/*.json
-│           ├── shared/common-setup.sh
+│           ├── shared/system-setup.sh
 │           ├── shared/zsh-custom.sh
 │           └── schema/devContainer.base.schema.json
 ├── tests/
@@ -338,7 +338,7 @@ Shared fixtures: sample fragments as dicts, `tmp_path`-based output directories.
 - Multi-lang merge: features and extensions combined
 - Node.js dedup: `node` language + npm-based agent doesn't duplicate Node feature
 - Multi-agent: `-a claude-code,codex` produces two postCreateCommand entries, two config mounts, Node.js injected from codex
-- Generated `common-setup.sh` contains correct `chown` lines for selected agents
+- Generated `system-setup.sh` contains correct `chown` lines for selected agents
 
 ### `tests/test_validator.py`
 

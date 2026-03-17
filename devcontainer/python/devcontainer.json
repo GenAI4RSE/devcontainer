@@ -19,7 +19,7 @@
     }
   },
   "onCreateCommand": {
-    "system-setup": "bash /workspace/.devcontainer/common-setup.sh"
+    "system-setup": "bash /workspace/.devcontainer/system-setup.sh"
   },
   "postCreateCommand": {
     "zsh-custom": "bash /workspace/.devcontainer/zsh-custom.sh",

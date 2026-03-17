@@ -27,7 +27,7 @@
 | `src/devcc/data/base/base.json` | Shared base fragment |
 | `src/devcc/data/languages/*.json` | 6 language fragments |
 | `src/devcc/data/agents/*.json` | 5 agent fragments |
-| `src/devcc/data/shared/common-setup.sh` | Base template for setup script |
+| `src/devcc/data/shared/system-setup.sh` | Base template for setup script |
 | `src/devcc/data/shared/zsh-custom.sh` | Static zsh customization script |
 | `src/devcc/data/schema/devContainer.base.schema.json` | Bundled official schema |
 | `tests/conftest.py` | Shared fixtures |
@@ -131,7 +131,7 @@ git commit -m "feat: scaffold devcc package with pyproject.toml and uv"
 - Create: `src/devcc/data/base/base.json`
 - Create: `src/devcc/data/languages/{python,node,rust,r,julia,c-cpp-fortran}.json`
 - Create: `src/devcc/data/agents/{claude-code,codex,copilot,gemini,cursor}.json`
-- Create: `src/devcc/data/shared/common-setup.sh`
+- Create: `src/devcc/data/shared/system-setup.sh`
 - Create: `src/devcc/data/shared/zsh-custom.sh`
 - Create: `src/devcc/data/schema/devContainer.base.schema.json`
 
@@ -157,7 +157,7 @@ Write `src/devcc/data/base/base.json`:
     }
   },
   "onCreateCommand": {
-    "system-setup": "bash .devcontainer/common-setup.sh"
+    "system-setup": "bash .devcontainer/system-setup.sh"
   },
   "postCreateCommand": {
     "zsh-custom": "bash .devcontainer/zsh-custom.sh"
@@ -347,7 +347,7 @@ Write `src/devcc/data/agents/cursor.json`:
 
 - [ ] **Step 4: Create shell script base template**
 
-Write `src/devcc/data/shared/common-setup.sh` (base template — generator appends agent chown lines).
+Write `src/devcc/data/shared/system-setup.sh` (base template — generator appends agent chown lines).
 Locale settings (LANG/LC_ALL) are handled exclusively by `containerEnv` and NOT duplicated here:
 ```bash
 #!/bin/bash
@@ -995,7 +995,7 @@ class TestGenerate:
         result = generate([("python", None)], ["claude-code"], tmp_output)
         assert result == tmp_output
         assert (tmp_output / "devcontainer.json").exists()
-        assert (tmp_output / "common-setup.sh").exists()
+        assert (tmp_output / "system-setup.sh").exists()
         assert (tmp_output / "zsh-custom.sh").exists()
         data = json.loads((tmp_output / "devcontainer.json").read_text())
         assert data["name"] == "Python + Claude Code"
@@ -1009,7 +1009,7 @@ class TestGenerate:
         assert data["name"] == "Rust"
         assert "postCreateCommand" in data
         assert len(data["postCreateCommand"]) == 1  # only zsh-custom
-        setup = (tmp_output / "common-setup.sh").read_text()
+        setup = (tmp_output / "system-setup.sh").read_text()
         assert "/home/neo/.claude" not in setup
 
     def test_version_override(self, tmp_output: Path) -> None:
@@ -1048,7 +1048,7 @@ class TestGenerateBatch:
         # Each should have the 3 output files
         for p in paths:
             assert (p / "devcontainer.json").exists()
-            assert (p / "common-setup.sh").exists()
+            assert (p / "system-setup.sh").exists()
             assert (p / "zsh-custom.sh").exists()
 
     def test_directory_naming(self, tmp_output: Path) -> None:
@@ -1080,8 +1080,8 @@ from devcc.dimensions import (
 
 
 def build_setup_script(agent_fragments: list[dict[str, Any]]) -> str:
-    """Build common-setup.sh from base template + agent chown lines."""
-    base_path = get_data_path() / "shared" / "common-setup.sh"
+    """Build system-setup.sh from base template + agent chown lines."""
+    base_path = get_data_path() / "shared" / "system-setup.sh"
     with open(base_path) as f:
         script = f.read()
 
@@ -1105,8 +1105,8 @@ def write_output(
         json.dump(resolved, f, indent=2)
         f.write("\n")
 
-    # common-setup.sh — generated from template
-    (output_dir / "common-setup.sh").write_text(build_setup_script(agent_fragments))
+    # system-setup.sh — generated from template
+    (output_dir / "system-setup.sh").write_text(build_setup_script(agent_fragments))
 
     # zsh-custom.sh — static copy
     zsh_src = get_data_path() / "shared" / "zsh-custom.sh"
@@ -1214,7 +1214,7 @@ def _write_valid_template(d: Path) -> dict[str, Any]:
     }
     d.mkdir(parents=True, exist_ok=True)
     (d / "devcontainer.json").write_text(json.dumps(data, indent=2) + "\n")
-    (d / "common-setup.sh").write_text("#!/bin/bash\n")
+    (d / "system-setup.sh").write_text("#!/bin/bash\n")
     (d / "zsh-custom.sh").write_text("#!/bin/bash\n")
     return data
 
@@ -1251,7 +1251,7 @@ class TestValidateDirectory:
     def test_missing_devcontainer_json(self, tmp_path: Path) -> None:
         d = tmp_path / "template"
         d.mkdir()
-        (d / "common-setup.sh").write_text("#!/bin/bash\n")
+        (d / "system-setup.sh").write_text("#!/bin/bash\n")
         (d / "zsh-custom.sh").write_text("#!/bin/bash\n")
         errors = validate_directory(d)
         assert any("devcontainer.json" in e for e in errors)
@@ -1259,9 +1259,9 @@ class TestValidateDirectory:
     def test_missing_setup_script(self, tmp_path: Path) -> None:
         d = tmp_path / "template"
         _write_valid_template(d)
-        (d / "common-setup.sh").unlink()
+        (d / "system-setup.sh").unlink()
         errors = validate_directory(d)
-        assert any("common-setup.sh" in e for e in errors)
+        assert any("system-setup.sh" in e for e in errors)
 
     def test_missing_zsh_script(self, tmp_path: Path) -> None:
         d = tmp_path / "template"
@@ -1351,7 +1351,7 @@ def validate_directory(path: Path) -> list[str]:
             data = json.load(f)
         errors.extend(validate_devcontainer_json(data))
 
-    for script in ["common-setup.sh", "zsh-custom.sh"]:
+    for script in ["system-setup.sh", "zsh-custom.sh"]:
         if not (path / script).exists():
             errors.append(f"Missing: {path / script}")
 

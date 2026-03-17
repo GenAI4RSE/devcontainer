@@ -52,7 +52,7 @@ def validate_directory(path: Path) -> list[str]:
             data = json.load(f)
         errors.extend(validate_devcontainer_json(data))
 
-    for script in ["common-setup.sh", "zsh-custom.sh"]:
+    for script in ["system-setup.sh", "zsh-custom.sh"]:
         if not (path / script).exists():
             errors.append(f"Missing: {path / script}")
 

@@ -105,7 +105,7 @@ def batch(output: str) -> None:
     \b
     Produces 2 languages x (5 agents + no-agent) = 12 templates.
     Each template gets its own directory with:
-      devcontainer.json, common-setup.sh, zsh-custom.sh
+      devcontainer.json, system-setup.sh, zsh-custom.sh
     Directory naming: <lang> or <lang>-<agent>
       e.g., python/, python-claude-code/, node-codex/
     All templates are auto-validated after generation.

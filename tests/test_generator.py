@@ -332,7 +332,7 @@ class TestGenerate:
         result = generate([("python", None)], ["claude-code"], tmp_output)
         assert result == tmp_output
         assert (tmp_output / "devcontainer.json").exists()
-        assert (tmp_output / "common-setup.sh").exists()
+        assert (tmp_output / "system-setup.sh").exists()
         assert (tmp_output / "zsh-custom.sh").exists()
         data = json.loads((tmp_output / "devcontainer.json").read_text())
         assert data["name"] == "Python + Claude Code CLI"
@@ -346,7 +346,7 @@ class TestGenerate:
         assert data["name"] == "TypeScript / Node.js"
         assert "postCreateCommand" in data
         assert len(data["postCreateCommand"]) == 1  # only zsh-custom
-        setup = (tmp_output / "common-setup.sh").read_text()
+        setup = (tmp_output / "system-setup.sh").read_text()
         assert "/home/neo/.claude" not in setup
 
     def test_version_override(self, tmp_output: Path) -> None:
@@ -385,7 +385,7 @@ class TestGenerateBatch:
         # Each should have the 3 output files
         for p in paths:
             assert (p / "devcontainer.json").exists()
-            assert (p / "common-setup.sh").exists()
+            assert (p / "system-setup.sh").exists()
             assert (p / "zsh-custom.sh").exists()
 
     def test_directory_naming(self, tmp_output: Path) -> None:

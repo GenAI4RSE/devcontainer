@@ -15,7 +15,7 @@
     }
   },
   "onCreateCommand": {
-    "system-setup": "bash .devcontainer/common-setup.sh"
+    "system-setup": "bash .devcontainer/system-setup.sh"
   },
   "postCreateCommand": {
     "zsh-custom": "bash .devcontainer/zsh-custom.sh"

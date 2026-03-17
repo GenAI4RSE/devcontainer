@@ -8,7 +8,8 @@
 pip install devcc
 ```
 
-## Step 1: See What languages and agents are available
+## Quick Start
+### Step 1: See What languages and agents are available
 
 ```bash
 devcc list
@@ -21,13 +22,13 @@ Languages:
 
 Agents:
   claude-code          Claude Code CLI
-  codex                Codex
+  codex                Codex  CLI
   copilot              Copilot CLI
   cursor               Cursor CLI
   gemini               Gemini CLI
 ```
 
-## Step 2: Generate a devcontainer template
+### Step 2: Generate a devcontainer template
 
 Go to your project repository and run:
 
@@ -41,11 +42,11 @@ This creates a `.devcontainer/` folder in your project:
 ```
 .devcontainer/
 ├── devcontainer.json    # container configuration
-├── common-setup.sh      # system setup (volume permissions, git-delta)
+├── system-setup.sh      # system setup (volume permissions, git-delta)
 └── zsh-custom.sh        # shell customization (oh-my-zsh, autojump, aliases)
 ```
 
-### More Examples
+#### More Examples
 
 ```bash
 # Pin a specific language version
@@ -64,7 +65,7 @@ devcc create -l node
 devcc create -l python -a claude-code -o my-devcontainer
 ```
 
-## Step 3: Start the Dev Container
+### Step 3: Start the Dev Container
 
 **Option A: VS Code**
 
