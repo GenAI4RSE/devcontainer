@@ -29,12 +29,15 @@ def _parse_agents(agents_str: str) -> list[str]:
     return [a.strip() for a in agents_str.split(",") if a.strip()]
 
 
-@click.group()
+CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
+
+
+@click.group(context_settings=CONTEXT_SETTINGS)
 def main() -> None:
     """devcc — Generate devcontainer templates for AI coding agents."""
 
 
-@main.command(context_settings={"help_option_names": ["-h", "--help"]})
+@main.command()
 @click.option(
     "-l",
     "--langs",
