@@ -1,0 +1,7 @@
+{
+  "_id": "copilot",
+  "_name": "Copilot CLI",
+  "_install_command": "npm install -g @github/copilot",
+  "_config_dir": "/home/neo/.copilot",
+  "_requires_node": true
+}

@@ -1,0 +1,7 @@
+{
+  "_id": "cursor",
+  "_name": "Cursor CLI",
+  "_install_command": "curl https://cursor.com/install -fsS | bash",
+  "_config_dir": "/home/neo/.cursor",
+  "_requires_node": false
+}

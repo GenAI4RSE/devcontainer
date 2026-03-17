@@ -1,0 +1,7 @@
+{
+  "_id": "gemini",
+  "_name": "Gemini CLI",
+  "_install_command": "npm install -g @google/gemini-cli",
+  "_config_dir": "/home/neo/.gemini",
+  "_requires_node": true
+}

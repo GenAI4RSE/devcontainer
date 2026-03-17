@@ -1,0 +1,7 @@
+{
+  "_id": "claude-code",
+  "_name": "Claude Code",
+  "_install_command": "curl -fsSL https://claude.ai/install.sh | bash",
+  "_config_dir": "/home/neo/.claude",
+  "_requires_node": false
+}
