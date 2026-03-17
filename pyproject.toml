@@ -4,7 +4,11 @@ version = "0.1.0"
 description = "Generate devcontainer templates for AI coding agents"
 authors = [{ name = "Cunliang Geng", email = "c.geng@esciencecenter.nl" }]
 requires-python = ">=3.11"
-dependencies = ["click", "jsonschema>=4.18"]
+dependencies = [
+    "click",
+    "jsonschema>=4.18",
+    "rich-click>=1.9.7",
+]
 
 [project.scripts]
 devcc = "devcc.cli:main"

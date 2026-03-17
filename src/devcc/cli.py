@@ -4,11 +4,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import click
+import rich_click as click
 
 from devcc.dimensions import DIMENSIONS, list_available
 from devcc.generator import generate, generate_batch
 from devcc.validator import validate_batch, validate_directory
+
+click.rich_click.STYLE_HELPTEXT = ""
+click.rich_click.SHOW_ARGUMENTS = True
 
 
 def _parse_languages(langs_str: str) -> list[tuple[str, str | None]]:
@@ -32,7 +35,19 @@ def _parse_agents(agents_str: str) -> list[str]:
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
 
-@click.group(context_settings=CONTEXT_SETTINGS)
+class DescriptionFirstGroup(click.RichGroup):
+    """Show description before usage line in help output."""
+
+    def format_help(self, ctx: click.Context, formatter: click.HelpFormatter) -> None:
+        # Write description first
+        self.format_help_text(ctx, formatter)
+        # Then usage
+        self.format_usage(ctx, formatter)
+        # Then everything else (options, commands)
+        self.format_options(ctx, formatter)
+
+
+@click.group(cls=DescriptionFirstGroup, context_settings=CONTEXT_SETTINGS)
 def main() -> None:
     """devcc — Generate devcontainer templates for AI coding agents."""
 
