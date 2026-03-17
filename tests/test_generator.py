@@ -70,6 +70,8 @@ class TestDeepMerge:
         assert result == {"a": 1}
 
 
+from devcc.generator import resolve_custom_keys
+
 APT_FEATURE_KEY = "ghcr.io/devcontainers-extra/features/apt-get-packages:1"
 NODE_FEATURE_KEY = "ghcr.io/devcontainers/features/node:1"
 
