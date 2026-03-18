@@ -25,8 +25,10 @@ jobs:
       - name: Build
         run: uv build
 
-      - name: Install built package and test dependencies
-        run: uv pip install dist/*.whl pytest
+      - name: Create venv and install built package with test dependencies
+        run: |
+          uv venv
+          uv pip install dist/*.whl pytest
 
       - name: Test against installed package
         run:  pytest --import-mode=importlib
