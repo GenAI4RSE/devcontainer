@@ -5,15 +5,14 @@ description = "Generate devcontainer templates for AI coding agents"
 authors = [{ name = "Cunliang Geng", email = "c.geng@esciencecenter.nl" }]
 requires-python = ">=3.11"
 readme = "README.md"
+dependencies = [
+    "jsonschema>=4.18",
+    "rich-click>=1.9.7",
+]
 
 [project.urls]
 Homepage = "https://github.com/GenAI4RSE/devcontainer"
 Repository = "https://github.com/GenAI4RSE/devcontainer"
-dependencies = [
-    "click",
-    "jsonschema>=4.18",
-    "rich-click>=1.9.7",
-]
 
 [project.scripts]
 devcc = "devcc.cli:main"
