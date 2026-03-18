@@ -31,4 +31,4 @@ jobs:
           uv pip install dist/*.whl pytest
 
       - name: Test against installed package
-        run:  pytest --import-mode=importlib
+        run: .venv/bin/pytest --import-mode=importlib
