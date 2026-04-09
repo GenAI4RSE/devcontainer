@@ -10,6 +10,8 @@ HIST_STAMPS="yyyy-mm-dd"
 # autojump
 [ -f /usr/share/autojump/autojump.sh ] && . /usr/share/autojump/autojump.sh
 
-# bat is installed as batcat on Ubuntu
+# Alias
 alias bat="batcat"
+alias cls='clear'
+alias ll='ls -alF'
 EOF
